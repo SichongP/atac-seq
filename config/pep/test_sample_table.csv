@@ -1,0 +1,5 @@
+sample_name,bio_sample,condition,read1,read2
+SAMPLE_NAME,AH1,Cortex,FQ1,FQ2
+SAMPLE_NAME,AH2,Cortex,FQ1,FQ2
+SAMPLE_NAME,AH3,Cortex,FQ1,FQ2
+SAMPLE_NAME,AH4,Cortex,FQ1,FQ2
