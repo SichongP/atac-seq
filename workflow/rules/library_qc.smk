@@ -39,7 +39,7 @@ rule nuclear_mit_ratio:
     log: "logs/nuclear_mit_ratio/{sample}.log"
     shell:
      """
-     chrM_count=$(sambamba view -c -t {resources.cpus} -F "proper_pair and not duplicate and not supplementary and secondary_alignment" {input.bam} chrM)
+     chrM_count=$(sambamba view -c -t {resources.cpus} -F "proper_pair and not duplicate and not (supplementary or secondary_alignment)" {input.bam} chrM)
      nucl_count=$(sambamba view -c -t {resources.cpus} {input.filtered})
      echo $chrM_count"\t"$nucl_count > {output}
      """
