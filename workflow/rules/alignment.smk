@@ -30,10 +30,28 @@ rule bwa_mem:
         bam="results/mapped/{sample}.bam",
         index="results/mapped/{sample}.bam.bai",
     log:
-        "logs/bwa_mem2_sambamba/{sample}.log",
+        "logs/bwa_mem2_sambamba/{sample}.log"
     params:
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sort_extra="-q",  # Extra args for sambamba.
     threads: 8
     wrapper:
         "v1.3.2/bio/bwa-mem2/mem-samblaster"
+        
+rule filter:
+    input:
+        bam="results/mapped/{sample}.bam",
+        index="results/mapped/{sample}.bam.bai"
+    output:
+        bam="results/filtered_bam/{sample}.bam",
+        index="results/filtered_bam/{sample}.bam.bai"
+    log:
+        "logs/filter/{sample}.log"
+    resources: cpus=4, time_min=360, mem_mb=10000
+    conda: "../envs/samtools.yaml"
+    shell:
+     """
+     samtools idxstats {input.bam} | cut -f 1 | grep -v "chrUn" | grep -v "chrM" | xargs samtools view -bh -@ {resources.cpus} -F 3844 -q 30 {input.bam} > {output.bam}
+     samtools index -@ {resources.cpus} {output.bam}
+     """
+        
