@@ -3,3 +3,5 @@ sample: "{biorep}_{condition}"
 genome_size: 2506966135
 effective_size: 2365156725
 ref: "/home/pengsc/reference/equcab3/UCSC/equCab3.fa"
+#gff: "/home/pengsc/projects/Iso-seq/snakemake_pipeline/Results/Annotated/all_samples.gff3"
+gff: "/home/pengsc/reference/equcab3/RefSeq/AnnotationRelease103/GCF_002863925.1_EquCab3.0_genomic.renamed.gff"
