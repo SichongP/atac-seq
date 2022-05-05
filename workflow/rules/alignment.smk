@@ -18,6 +18,7 @@ rule bwa_index:
     log:
         "logs/bwa-mem2_index/ref.log",
     params: prefix="resources/ref/ref"
+    resources: cpus=1, cpus_bmm=1, time_min=360, mem_mb=5000, mem_mb_bmm=5000, partition="bmh"
     wrapper:
         "v1.3.2/bio/bwa-mem2/index"
         
@@ -25,7 +26,7 @@ rule bwa_mem:
 # Map reads using bwa-mem2, mark duplicates by samblaster and sort and index by sambamba
     input:
         reads = ["results/trimmed_reads/{sample}.1.fastq", "results/trimmed_reads/{sample}.2.fastq"],
-        idx=multiext({config['ref_idx']}, ".fa.amb", ".fa.ann", ".fa.bwt.2bit.64", ".fa.pac")
+        idx=multiext("resources/ref/ref", ".amb", ".ann", ".bwt.2bit.64", ".pac")
     output:
         bam="results/mapped/{sample}.bam",
         index="results/mapped/{sample}.bam.bai",
