@@ -1,8 +1,8 @@
 rule bwa_mem:
 # Map reads using bwa-mem2, mark duplicates by samblaster and sort and index by sambamba
     input:
-        reads=lambda wildcards: [pep.sample_table.loc[wildcards.sample, 'read1'], pep.sample_table.loc[wildcards.sample, 'read2']],
-        idx=multiext({config['ref_idx']}, ".fa", ".amb", ".ann", ".bwt.2bit.64", ".pac")
+        reads = ["results/trimmed_reads/{sample}.1.fastq", "results/trimmed_reads/{sample}.2.fastq"],
+        idx={config['ref_idx']}
     output:
         bam="results/mapped/{sample}.bam",
         index="results/mapped/{sample}.bam.bai",
