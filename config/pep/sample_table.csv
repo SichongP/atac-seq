@@ -1,4 +1,4 @@
-sample_name,bio_sample,sex,condition,read1,read2
+sample_name,bio_sample,sex,condition,R1,R2
 SAMPLE_NAME,AH1,F,Cortex,FQ1,FQ2
 SAMPLE_NAME,AH2,F,Cortex,FQ1,FQ2
 SAMPLE_NAME,AH3,M,Cortex,FQ1,FQ2
