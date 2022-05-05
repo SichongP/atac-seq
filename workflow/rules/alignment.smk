@@ -1,3 +1,26 @@
+rule get_ref_genome:
+    input: {config['ref']}
+    output: "resources/ref/ref.fa"
+    shell:
+     """
+     cp {input} {output}
+     """
+
+rule bwa_index:
+    input:
+        "resources/ref/ref.fa",
+    output:
+        "resources/ref/ref.0123",
+        "resources/ref/ref.amb",
+        "resources/ref/ref.ann",
+        "resources/ref/ref.bwt.2bit.64",
+        "resources/ref/ref.pac",
+    log:
+        "logs/bwa-mem2_index/ref.log",
+    params: prefix="resources/ref/ref"
+    wrapper:
+        "v1.3.2/bio/bwa-mem2/index"
+        
 rule bwa_mem:
 # Map reads using bwa-mem2, mark duplicates by samblaster and sort and index by sambamba
     input:
