@@ -2,7 +2,7 @@ rule bwa_mem:
 # Map reads using bwa-mem2, mark duplicates by samblaster and sort and index by sambamba
     input:
         reads = ["results/trimmed_reads/{sample}.1.fastq", "results/trimmed_reads/{sample}.2.fastq"],
-        idx={config['ref_idx']}
+        idx=multiext({config['ref_idx']}, ".fa.amb", ".fa.ann", ".fa.bwt.2bit.64", ".fa.pac")
     output:
         bam="results/mapped/{sample}.bam",
         index="results/mapped/{sample}.bam.bai",
