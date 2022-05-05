@@ -25,13 +25,12 @@ rule bwa_index:
 rule bwa_mem:
 # Map reads using bwa-mem2, mark duplicates by samblaster and sort and index by sambamba
     input:
-        reads = ["results/trimmed_reads/{sample}.1.fastq", "results/trimmed_reads/{sample}.2.fastq"],
+        reads = [OUTDIR + "/trimmed_reads/{sample}.1.fastq", OUTDIR + "/trimmed_reads/{sample}.2.fastq"],
         idx=multiext("resources/ref/ref", ".amb", ".ann", ".bwt.2bit.64", ".pac")
     output:
-        bam="results/mapped/{sample}.bam",
-        index="results/mapped/{sample}.bam.bai",
-    log:
-        "logs/bwa_mem2_sambamba/{sample}.log"
+        bam=OUTDIR + "/mapped/{sample}.bam",
+        index=OUTDIR + "/mapped/{sample}.bam.bai",
+    log: "logs/bwa_mem2_sambamba/{sample}.log"
     params:
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
         sort_extra="-q"
@@ -42,11 +41,11 @@ rule bwa_mem:
         
 rule filter:
     input:
-        bam="results/mapped/{sample}.bam",
-        index="results/mapped/{sample}.bam.bai"
+        bam = OUTDIR + "/mapped/{sample}.bam",
+        index = OUTDIR + "/mapped/{sample}.bam.bai"
     output:
-        bam="results/filtered_bam/{sample}.bam",
-        index="results/filtered_bam/{sample}.bam.bai"
+        bam = OUTDIR + "/filtered_bam/{sample}.bam",
+        index = OUTDIR + "/filtered_bam/{sample}.bam.bai"
     log: "logs/filter/{sample}.log"
     resources: cpus=4, cpus_bmm=4, time_min=360, mem_mb=10000, mem_mb_bmm=10000, partition="bmm"
     conda: "../envs/samtools.yaml"
@@ -58,10 +57,10 @@ rule filter:
         
 rule shift_reads:
     input:
-        bam="results/filtered_bam/{sample}.bam",
-        index="results/filtered_bam/{sample}.bam.bai"
+        bam = OUTDIR + "/filtered_bam/{sample}.bam",
+        index = OUTDIR + "/filtered_bam/{sample}.bam.bai"
     output:
-        bam="results/shifted_bam/{sample}.bam"
+        bam = OUTDIR + "/shifted_bam/{sample}.bam"
     resources: cpus=4, cpus_bmm=4, time_min=240, mem_mb=8000, mem_mb_bmm=8000, partition="med2"
     conda: "../envs/deeptools.yaml"
     log: "logs/deeptools/{sample}.shift.log"

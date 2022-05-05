@@ -1,9 +1,9 @@
 rule frag_size_pe:
-    input: "results/mapped/{sample}.bam"
+    input: OUTDIR + "/mapped/{sample}.bam"
     output:
-        fig = "results/figures/frag_size/{sample}.png",
-        stat = "results/metrics/frag_size/{sample}.tsv",
-        raw = "results/metrics/frag_size/counts_{sample}.txt"
+        fig = OUTDIR + "/figures/frag_size/{sample}.png",
+        stat = OUTDIR + "/metrics/frag_size/{sample}.tsv",
+        raw = OUTDIR + "/metrics/frag_size/counts_{sample}.txt"
     conda: "../envs/deeptools.yaml"
     resources: cpus=8, cpus_bmm=8, mem_mb=4000, mem_mb_bmm=4000, time_min=60, partition='bmm'
     log: "logs/frag_size/{sample}.log"
@@ -13,8 +13,8 @@ rule frag_size_pe:
      """
 
 rule sambamba_flagstat:
-    input: "results/mapped/{sample}.bam"
-    output: "results/mapped/stats/{sample}.flagstats.txt"
+    input: OUTDIR + "/mapped/{sample}.bam"
+    output: OUTDIR + "/mapped/stats/{sample}.flagstats.txt"
     log: "logs/sambamba-flagstat/{sample}.log"
     params: extra = ""
     resources: cpus=1, cpus_bmm=1, mem_mb=3000, mem_mb_bmm=3000, time_min=300, partition='bmm'
@@ -33,9 +33,9 @@ rule tss_from_gff3:
 
 rule nuclear_mit_ratio:
     input:
-        bam="results/mapped/{sample}.bam",
-        filtered="results/filtered_bam/{sample}.bam"
-    output: "results/mapped/stats/{sample}.nucl.mit.ratio"
+        bam = OUTDIR + "/mapped/{sample}.bam",
+        filtered = OUTDIR + "/filtered_bam/{sample}.bam"
+    output: OUTDIR + "/mapped/stats/{sample}.nucl.mit.ratio"
     conda: "../envs/sambamba.yaml"
     resources: cpus=1, mem_mb = 3000, cpus_bmm=1, mem_mb_bmm=3000, time_min=180, partition='bmm'
     log: "logs/nuclear_mit_ratio/{sample}.log"
@@ -48,10 +48,9 @@ rule nuclear_mit_ratio:
      
 rule tss_enrichment:
     input:
-        bam="results/filtered_bam/{sample}.bam",
-        bed="resources/annotation/tss.bed"
-    output:
-        "results/tss_enricment/{sample}.TssEnrichment"
+        bam = OUTDIR + "/filtered_bam/{sample}.bam",
+        bed = "resources/annotation/tss.bed"
+    output: OUTDIR + "/tss_enricment/{sample}.TssEnrichment"
     conda: "../envs/tss_enrichment.yaml"
     resources: cpus=1, mem_mb = 3000, cpus_bmm=1, mem_mb_bmm=3000, time_min = 180, partition='bmm'
     log: "logs/nuclear_mit_ratio/{sample}.log"
