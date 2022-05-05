@@ -32,7 +32,7 @@ rule multiqc_raw:
         "v1.3.2/bio/multiqc"
      
 rule fastp:
-    input: sample=expand("results/qc/fastqc/raw/{{sample}}_{read}_fastqc.zip", read = ['R1', 'R2'])
+    input: sample=expand("resources/raw_reads/{{sample}}_{read}.fastq.gz", read = ['R1', 'R2'])
     output:
         trimmed=["results/trimmed_reads/{sample}.1.fastq", "results/trimmed_reads/{sample}.2.fastq"],
         # Unpaired reads separately
