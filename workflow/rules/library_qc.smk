@@ -5,7 +5,8 @@ rule frag_size_pe:
         stat = "results/metrics/frag_size/{sample}.tsv",
         raw = "results/metrics/frag_size/counts_{sample}.txt"
     conda: "../envs/deeptools.yaml"
-    resources: cpus=8, mem_mb = 4000, time_min = 60
+    resources: cpus=8, cpus_bmm=8, mem_mb=4000, mem_mb_bmm=4000, time_min=60
+    params: partition='bmm'
     log: "logs/frag_size/{sample}.log"
     shell:
      """
@@ -16,7 +17,8 @@ rule sambamba_flagstat:
     input: "results/mapped/{sample}.bam"
     output: "results/mapped/stats/{sample}.flagstats.txt"
     log: "logs/sambamba-flagstat/{sample}.log"
-    params: extra = ""
+    params: extra = "", params='bmm'
+    resources: cpus=1, cpus_bmm=1, mem_mb=3000, mem_mb_bmm=3000, time_min=300
     threads: 1
     wrapper:
         "v1.3.2/bio/sambamba/flagstat"
@@ -35,7 +37,8 @@ rule nuclear_mit_ratio:
         filtered="results/filtered_bam/{sample}.bam"
     output: "results/mapped/stats/{sample}.nucl.mit.ratio"
     conda: "../envs/sambamba.yaml"
-    resources: cpus=1, mem_mb = 3000, time_min = 60
+    resources: cpus=1, mem_mb = 3000, cpus_bmm=1, mem_mb_bmm=3000, time_min=180
+    params: partition='bmm'
     log: "logs/nuclear_mit_ratio/{sample}.log"
     shell:
      """
@@ -51,7 +54,8 @@ rule tss_enrichment:
     output:
         "results/tss_enricment/{sample}.TssEnrichment"
     conda: "../envs/tss_enrichment.yaml"
-    resources: cpus=1, mem_mb = 3000, time_min = 60
+    resources: cpus=1, mem_mb = 3000, cpus_bmm=1, mem_mb_bmm=3000, time_min = 180
+    params: partition='bmm'
     log: "logs/nuclear_mit_ratio/{sample}.log"
     shell:
      """
