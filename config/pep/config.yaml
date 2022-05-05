@@ -19,6 +19,7 @@ project_modifiers:
   amend:
     test_workflow:
       sample_table: test_sample_table.csv
+      output_dir: "../test_results"
       sample_modifiers:
         append:
           input_dir: "resources/test_reads"
