@@ -2,3 +2,21 @@
 # Please follow the best practices: 
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there. 
+
+pepfile: "config/pep/config.yaml"
+configfile: "config/config.yaml"
+
+include: "rules/read_qc.smk"
+include: "rules/library_qc.smk"
+include: "rules/alignment.smk"
+
+rule all:
+    input:
+        "results/qc/fastqc/raw/multiqc_report.html",
+        "results/qc/trimmed/multiqc_report.html",
+        expand("results/mapped/{sample}.bam", sample = pep.sample_table['sample_name']),
+        "resources/annotation/tss.bed",
+        expand("results/tss_enricment/{sample}.TssEnrichment", sample = pep.sample_table['sample_name']),
+        expand("results/mapped/stats/{sample}.nucl.mit.ratio", sample = pep.sample_table['sample_name']),
+        expand("results/mapped/stats/{sample}.flagstats.txt", sample = pep.sample_table['sample_name']),
+        expand("results/metrics/frag_size/{sample}.tsv", sample = pep.sample_table['sample_name'])
