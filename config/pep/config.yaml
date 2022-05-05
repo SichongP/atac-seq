@@ -3,13 +3,13 @@ name: atac_snakemake
 pep_version: 2.0.0
 sample_table: sample_table.csv
 
-output_dir: "../results"
+output_dir: "test_results"
 
 sample_modifiers:
   append:
-    input_dir: "resources/raw_reads"
+    input_dir: "resources/test_reads"
   derive:
-    attributes: [read1, read2, sample_name]
+    attributes: [R1, R2, sample_name]
     sources:
       SAMPLE_NAME: "{bio_sample}_{condition}"
       FQ1: "{input_dir}/{bio_sample}_{condition}_R1.fastq.gz"
@@ -19,7 +19,7 @@ project_modifiers:
   amend:
     test_workflow:
       sample_table: test_sample_table.csv
-      output_dir: "../test_results"
+      output_dir: "test_results"
       sample_modifiers:
         append:
           input_dir: "resources/test_reads"
