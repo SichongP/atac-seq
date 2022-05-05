@@ -5,12 +5,12 @@
 
 pepfile: "config/pep/config.yaml"
 configfile: "config/config.yaml"
+OUTDIR = pep.config['output_dir']
 
 include: "rules/read_qc.smk"
 include: "rules/library_qc.smk"
 include: "rules/alignment.smk"
 
-OUTDIR = pep.config
 
 rule all:
     input:
