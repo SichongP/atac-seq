@@ -47,8 +47,7 @@ rule filter:
     output:
         bam="results/filtered_bam/{sample}.bam",
         index="results/filtered_bam/{sample}.bam.bai"
-    log:
-        "logs/filter/{sample}.log"
+    log: "logs/filter/{sample}.log"
     resources: cpus=4, cpus_bmm=4, time_min=360, mem_mb=10000, mem_mb_bmm=10000, partition="bmm"
     conda: "../envs/samtools.yaml"
     shell:
@@ -57,3 +56,16 @@ rule filter:
      samtools index -@ {resources.cpus} {output.bam}
      """
         
+rule shift_reads:
+    input:
+        bam="results/filtered_bam/{sample}.bam",
+        index="results/filtered_bam/{sample}.bam.bai"
+    output:
+        bam="results/shifted_bam/{sample}.bam"
+    resources: cpus=4, cpus_bmm=4, time_min=240, mem_mb=8000, mem_mb_bmm=8000, partition="med2"
+    conda: "../envs/deeptools.yaml"
+    log: "logs/deeptools/{sample}.shift.log"
+    shell:
+     """
+     alignmentSieve -b {input.bam} -o {output} -p {resources.cpus} --ATACshift 
+     """
