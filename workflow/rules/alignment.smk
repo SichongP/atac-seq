@@ -10,10 +10,9 @@ rule bwa_mem:
         "logs/bwa_mem2_sambamba/{sample}.log"
     params:
         extra=r"-R '@RG\tID:{sample}\tSM:{sample}'",
-        sort_extra="-q",
-        partition="bmm"
+        sort_extra="-q"
     threads: 8
-    resources: cpus=8, cpus_bmm=8, time_min=360, mem_mb=10000, mem_mb_bmm=10000
+    resources: cpus=8, cpus_bmm=8, time_min=360, mem_mb=10000, mem_mb_bmm=10000, partition="bmm"
     wrapper:
         "v1.3.2/bio/bwa-mem2/mem-samblaster"
         
@@ -26,8 +25,7 @@ rule filter:
         index="results/filtered_bam/{sample}.bam.bai"
     log:
         "logs/filter/{sample}.log"
-    resources: cpus=4, cpus_bmm=4, time_min=360, mem_mb=10000, mem_mb_bmm=10000
-    params: partition="bmm"
+    resources: cpus=4, cpus_bmm=4, time_min=360, mem_mb=10000, mem_mb_bmm=10000, partition="bmm"
     conda: "../envs/samtools.yaml"
     shell:
      """
