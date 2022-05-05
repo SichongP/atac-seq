@@ -52,7 +52,7 @@ rule tss_enrichment:
         bed = "resources/annotation/tss.bed"
     output: OUTDIR + "/tss_enricment/{sample}.TssEnrichment"
     conda: "../envs/tss_enrichment.yaml"
-    resources: cpus=1, mem_mb = 3000, cpus_bmm=1, mem_mb_bmm=3000, time_min = 180, partition='bmm'
+    resources: cpus=1, mem_mb = 5000, cpus_bmm=1, mem_mb_bmm=5000, time_min = 360, partition='bmm'
     log: "logs/nuclear_mit_ratio/{sample}.log"
     shell:
      """
