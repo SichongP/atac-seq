@@ -3,3 +3,5 @@ resources/**
 logs/**
 .snakemake
 .snakemake/**
+logs_slurm/**
+slurm-*.out
