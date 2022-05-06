@@ -60,11 +60,15 @@ rule shift_reads:
         bam = OUTDIR + "/filtered_bam/{sample}.bam",
         index = OUTDIR + "/filtered_bam/{sample}.bam.bai"
     output:
-        bam = OUTDIR + "/shifted_bam/{sample}.bam"
+        bam = OUTDIR + "/shifted_bam/{sample}.bam",
+        index = OUTDIR + "/shifted_bam/{sample}.bam.bai"
     resources: cpus=4, cpus_bmm=4, time_min=240, mem_mb=8000, mem_mb_bmm=8000, partition="med2"
     conda: "../envs/deeptools.yaml"
     log: "logs/deeptools/{sample}.shift.log"
     shell:
      """
-     alignmentSieve -b {input.bam} -o {output} -p {resources.cpus} --ATACshift 
+     alignmentSieve -b {input.bam} -o {output.bam}.tmp -p {resources.cpus} --ATACshift
+     samtools sort -o {output.bam} -@ {resources.cpus} {output.bam}.tmp
+     rm {output.bam}.tmp
+     samtools index -@ {resources.cpus} {output.bam}
      """
