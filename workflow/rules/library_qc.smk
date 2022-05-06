@@ -26,9 +26,10 @@ rule tss_from_gff3:
     input: {config['gff']}
     output: "resources/annotation/tss.bed"
     resources: cpus=1, cpus_bmm=1, mem_mb=3000, mem_mb_bmm=3000, time_min=90, partition='low2'
+    log: "logs/tss_from_gff3/tss_from_gff3.txt"
     shell:
      """
-     cat {input} | awk '{{if ($3=="mRNA") print $0}}' | awk '{{if ($7=="+") {{print $1"\t"$4-1"\t"$4"\t"$7}} else {{print $1"\t"$5-1"\t"$5"\t"$7}}}}' > {output}
+     cat {input} | awk '{{if ($3=="mRNA") print $0}}' | awk '{{if ($7=="+") {{print $1"\t"$4-1"\t"$4"\t"$7}} else {{print $1"\t"$5-1"\t"$5"\t"$7}}}}' 1> {output} 2> {log}
      """
 
 rule nuclear_mit_ratio:
