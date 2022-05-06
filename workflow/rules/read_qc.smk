@@ -16,12 +16,11 @@ rule fastqc:
         "v1.3.2/bio/fastqc"
         
 rule multiqc_raw:
-    input:
-        expand(OUTDIR + "/qc/fastqc/raw/{sample}_{read}_fastqc.zip", sample=pep.sample_table['sample_name'], read = ['R1', 'R2'])
+    input: expand(OUTDIR + "/qc/fastqc/raw/{sample}_{read}_fastqc.zip", sample=pep.sample_table['sample_name'], read = ['R1', 'R2'])
     output: OUTDIR + "/qc/fastqc/raw/multiqc_report.html"
     params:
-        in_dir = OUTDIR + "/qc/fastqc/raw/",
-        out_dir = OUTDIR + "/qc/fastqc/raw/"
+        in_dir = lambda w, input: os.path.splitext(input[0])[0],
+        out_dir = lambda w, input: os.path.splitext(output[0])[0]
     resources: mem_mb = 500, time_min = 60, cpus = 1, partition="low2"
     log:
         "logs/multiqc.log"
@@ -49,9 +48,8 @@ rule multiqc_trimmed:
         expand(OUTDIR + "/qc/trimmed/{sample}.fastp.json", sample=pep.sample_table['sample_name'])
     output: OUTDIR + "/qc/trimmed/multiqc_report.html"
     params:
-        in_dir = OUTDIR + "/qc/trimmed/",
-        out_dir = OUTDIR + "/qc/trimmed/",
-        
+        in_dir = lambda w, input: os.path.splitext(input[0])[0],
+        out_dir = lambda w, input: os.path.splitext(output[0])[0]
     log: "logs/multiqc_trimmed.log"
     resources: mem_mb = 500, time_min = 60, cpus = 1, partition="low2"
     wrapper:
