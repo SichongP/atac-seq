@@ -3,6 +3,8 @@
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there. 
 
+import os
+
 pepfile: "config/pep/config.yaml"
 configfile: "config/config.yaml"
 OUTDIR = pep.config['output_dir']
@@ -21,4 +23,5 @@ rule all:
         expand(OUTDIR + "/tss_enricment/{sample}.TssEnrichment", sample = pep.sample_table['sample_name']),
         expand(OUTDIR + "/mapped/stats/{sample}.nucl.mit.ratio", sample = pep.sample_table['sample_name']),
         expand(OUTDIR + "/mapped/stats/{sample}.flagstats.txt", sample = pep.sample_table['sample_name']),
-        expand(OUTDIR + "/metrics/frag_size/{sample}.tsv", sample = pep.sample_table['sample_name'])
+        expand(OUTDIR + "/metrics/frag_size/{sample}.tsv", sample = pep.sample_table['sample_name']),
+        expand(OUTDIR + "/shifted_bam/{sample}.bam", sample = pep.sample_table['sample_name'])
