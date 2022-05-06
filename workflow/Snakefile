@@ -12,16 +12,15 @@ OUTDIR = pep.config['output_dir']
 include: "rules/read_qc.smk"
 include: "rules/library_qc.smk"
 include: "rules/alignment.smk"
+include: "rules/call_peaks.smk"
 
 
 rule all:
     input:
-        OUTDIR + "/qc/fastqc/raw/multiqc_report.html",
-        OUTDIR + "/qc/trimmed/multiqc_report.html",
-        expand(OUTDIR + "/mapped/{sample}.bam", sample = pep.sample_table['sample_name']),
-        "resources/annotation/tss.bed",
-        expand(OUTDIR + "/tss_enricment/{sample}.TssEnrichment", sample = pep.sample_table['sample_name']),
-        expand(OUTDIR + "/mapped/stats/{sample}.nucl.mit.ratio", sample = pep.sample_table['sample_name']),
-        expand(OUTDIR + "/mapped/stats/{sample}.flagstats.txt", sample = pep.sample_table['sample_name']),
-        expand(OUTDIR + "/metrics/frag_size/{sample}.tsv", sample = pep.sample_table['sample_name']),
-        expand(OUTDIR + "/shifted_bam/{sample}.bam", sample = pep.sample_table['sample_name'])
+        f"{OUTDIR}/qc/fastqc/raw/multiqc_report.html",
+        f"{OUTDIR}/qc/trimmed/multiqc_report.html",
+        expand(f"{OUTDIR}/tss_enricment/{{sample}}.TssEnrichment", sample = pep.sample_table['sample_name']),
+        expand(f"{OUTDIR}/mapped/stats/{{sample}}.nucl.mit.ratio", sample = pep.sample_table['sample_name']),
+        expand(f"{OUTDIR}/mapped/stats/{{sample}}.flagstats.txt", sample = pep.sample_table['sample_name']),
+        expand(f"{OUTDIR}/metrics/frag_size/{{sample}}.tsv", sample = pep.sample_table['sample_name']),
+        expand(f"{OUTDIR}/bed_se/{{sample}}.bed", sample = pep.sample_table['sample_name'])
