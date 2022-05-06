@@ -31,6 +31,7 @@ rule sort_by_name:
     output: f"{OUTDIR}/shifted_bam/name_sorted/{{sample}}.bam"
     params: "-n"
     log: "logs/sort_by_name/{sample}.log"
+    resources: cpus = 2, time_min=60, mem_mb=5000, cpus_bmm=2, mem_mb_bmm=5000, partition = 'med2'
     threads: 2
     wrapper:
         "v1.4.0/bio/sambamba/sort"
