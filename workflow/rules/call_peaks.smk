@@ -47,6 +47,6 @@ rule genrich:
     resources: cpus = 1, time_min=60, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
     shell:
      """
-     chr_exl=$(samtools view -H {input} | grep -E "chrUn|chrM" | cut -d ':' -f 2 | sed -z 's/\\n/,/g')
-     genrich -t \"{input}\" -o {output.peak} -f {output.flog} -k {output.klog} -e $chr_exl -j -D -d 150 -p 0.01 -g 50
+     chr_exl=$(samtools view -H {input} | grep -E "chrUn|chrM" | cut -d ':' -f 2| cut -d $'\t' -f 1 | sed -z 's/\\n/,/g')
+     Genrich -t \"{input}\" -o {output.peak} -f {output.flog} -k {output.klog} -e $chr_exl -j -D -d 150 -p 0.01 -g 50
      """
