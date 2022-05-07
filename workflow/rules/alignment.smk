@@ -60,8 +60,8 @@ rule shift_reads:
         bam = f"{OUTDIR}/filtered_bam/{{sample}}.bam",
         index = f"{OUTDIR}/filtered_bam/{{sample}}.bam.bai"
     output:
-        bam = f"{OUTDIR}/shifted_bam/{{sample}}.bam",
-        index = f"{OUTDIR}/shifted_bam/{{sample}}.bam.bai"
+        bam = f"{OUTDIR}/shifted_bam/{{sample, [\w\d_]+}}.bam",
+        index = f"{OUTDIR}/shifted_bam/{{sample, [\w\d_]+}}.bam.bai"
     resources: cpus=4, cpus_bmm=4, time_min=240, mem_mb=8000, mem_mb_bmm=8000, partition="med2"
     conda: "../envs/deeptools.yaml"
     log: "logs/deeptools/{sample}.shift.log"
