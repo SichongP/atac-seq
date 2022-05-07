@@ -23,4 +23,5 @@ rule all:
         expand(f"{OUTDIR}/mapped/stats/{{sample}}.nucl.mit.ratio", sample = pep.sample_table['sample_name']),
         expand(f"{OUTDIR}/mapped/stats/{{sample}}.flagstats.txt", sample = pep.sample_table['sample_name']),
         expand(f"{OUTDIR}/metrics/frag_size/{{sample}}.tsv", sample = pep.sample_table['sample_name']),
-        expand(f"{OUTDIR}/bed_se/{{sample}}.bed", sample = pep.sample_table['sample_name'])
+        expand(f"{OUTDIR}/peaks/{{caller}}/standard/{{sample}}/{{sample}}.unique_501bp_peaks.txt", sample = pep.sample_table['sample_name'], caller = ['macs3', 'genrich']),
+        expand(f"{OUTDIR}/peaks/genrich/combined_call/{{tissue_sex}}/{{tissue_sex}}_peaks.narrowPeak", tissue_sex = [ '_'.join(i) for i in pep.sample_table[['condition', 'sex']].values.tolist()])

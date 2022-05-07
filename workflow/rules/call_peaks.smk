@@ -12,7 +12,7 @@ rule make_bed_se:
      bedtools bamtobed -i {input} 2>{log} 1>{output} 
      """
      
-rule macs3_merged:
+rule macs3:
 # Here we shift reads toward 5' direction by 75bp and then extend to a fixed 150bp fragment towards 3' direction
 # This centers our read (which is now considered as fragment by peak caller) around the Tn5 cutting sites and smooths the signal with a 75bp window on both sides
     input: f"{OUTDIR}/bed_se/{{sample}}.bed"
@@ -39,14 +39,43 @@ rule sort_by_name:
 rule genrich:
     input: lambda w: expand(f"{OUTDIR}/shifted_bam/name_sorted/{{sample}}.bam", sample = pep.sample_table.loc[(pep.sample_table['condition'] == w.condition) & (pep.sample_table['sex'] == w.sex)]['sample_name'])
     output:
-        peak=f"{OUTDIR}/peaks/genrich/{{condition}}_{{sex}}/{{condition}}_{{sex}}.narrowPeak",
-        flog=f"{OUTDIR}/peaks/genrich/{{condition}}_{{sex}}/{{condition}}_{{sex}}.f.bedgraph",
-        klog=f"{OUTDIR}/peaks/genrich/{{condition}}_{{sex}}/{{condition}}_{{sex}}.k.bedgraph"
+        peak=f"{OUTDIR}/peaks/genrich/combined_call/{{condition}}_{{sex}}/{{condition}}_{{sex}}_peaks.narrowPeak",
+        flog=f"{OUTDIR}/peaks/genrich/combined_call/{{condition}}_{{sex}}/{{condition}}_{{sex}}.f.bedgraph",
+        klog=f"{OUTDIR}/peaks/genrich/combined_call/{{condition}}_{{sex}}/{{condition}}_{{sex}}.k.bedgraph"
     conda: "../envs/genrich.yaml"
     params: outdir = lambda w, output: os.path.split(output[0])[0]
+    log: "logs/genrich/combined_call/{condition}_{sex}.log"
     resources: cpus = 1, time_min=60, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
     shell:
      """
      chr_exl=$(samtools view -H {input} | grep -E "chrUn|chrM" | cut -d ':' -f 2| cut -d $'\t' -f 1 | sed -z 's/\\n/,/g')
-     Genrich -t \"{input}\" -o {output.peak} -f {output.flog} -k {output.klog} -e $chr_exl -j -D -d 150 -p 0.01 -g 50
+     Genrich -t \"{input}\" -o {output.peak} -f {output.flog} -k {output.klog} -e $chr_exl -j -D -d 150 -p 0.01 -g 50 2>{log}
      """
+
+rule genrich_by_replicate:
+    input: f"{OUTDIR}/shifted_bam/name_sorted/{{sample}}.bam"
+    output:
+        peak=f"{OUTDIR}/peaks/genrich/{{sample}}/{{sample}}_peaks.narrowPeak",
+        flog=f"{OUTDIR}/peaks/genrich/{{sample}}/{{sample}}.f.bedgraph",
+        klog=f"{OUTDIR}/peaks/genrich/{{sample}}/{{sample}}.k.bedgraph"
+    conda: "../envs/genrich.yaml"
+    params: outdir = lambda w, output: os.path.split(output[0])[0]
+    log: "logs/genrich/{sample}.log"
+    resources: cpus = 1, time_min=60, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
+    shell:
+     """
+     chr_exl=$(samtools view -H {input} | grep -E "chrUn|chrM" | cut -d ':' -f 2| cut -d $'\t' -f 1 | sed -z 's/\\n/,/g')
+     Genrich -t {input} -o {output.peak} -f {output.flog} -k {output.klog} -e $chr_exl -j -D -d 150 -p 0.01 -g 50 2>{log}
+     """
+
+rule get_standard_peak_set_by_sample:
+# Make 501bp fixed length peak sets and normalize peak scores
+    input:
+        peaks=lambda w: f"{OUTDIR}/peaks/macs3/{{sample}}/{{sample}}_peaks.xls" if w.caller == 'macs3' else f"{OUTDIR}/peaks/genrich/{{sample}}/{{sample}}_peaks.narrowPeak",
+        chrom_sizes=config['chrom_sizes']
+    output: f"{OUTDIR}/peaks/{{caller}}/standard/{{sample}}/{{sample}}.unique_501bp_peaks.txt"
+    params: outdir = lambda w, output: os.path.split(output[0])[0]
+    log: "logs/get_standard_peak_set_by_sample/{sample}_{caller}.log"
+    resources: cpus = 1, time_min=120, mem_mb=6000, cpus_bmm=1, mem_mb_bmm=6000, partition = 'med2'
+    conda: "../envs/pandas.yaml"
+    script: "../scripts/pyStandardizePeaks.py"
