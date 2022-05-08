@@ -19,7 +19,6 @@ def find_peak(read, peaks):
 def count_file(bed_file, peaks):
     name = os.path.basename(bed_file).replace('.bed', '')
     full_reads = pd.read_csv(bed_file, sep = '\t', names = ['chr', 'start', 'end', 'name', 'mapq', 'strand'], engine = 'c')
-    full_reads = full_reads.head(100)
     full_reads['read'] = np.where(full_reads['name'].str.endswith('1'), 1, 2)
     mat = full_reads.apply(find_peak, peaks = union_peaks, axis = 1)
     return (name, np.array([i for i in mat]).sum(axis = 0))
@@ -30,4 +29,6 @@ with Pool(ncores) as p:
         union_peaks.loc[:, name] = result
         
 union_peaks['peak'] = union_peaks['chr'] + '_' + union_peaks['start'].astype(str) + '_' + union_peaks['end'].astype(str)
-union_peaks.iloc[:, 5:].set_index('peak').to_csv(out_file)
+matrix = union_peaks.iloc[:, 5:].set_index('peak')
+matrix = np.log((matrix / (matrix.sum(axis = 1) + 1)) + 1)
+matrix.to_csv(out_file)
