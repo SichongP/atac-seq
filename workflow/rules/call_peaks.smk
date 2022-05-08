@@ -103,3 +103,13 @@ rule union_peaks:
     resources: cpus = 1, time_min=120, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
     conda: "../envs/pandas.yaml"
     script: "../scripts/pyMergeBioSamples.py"
+   
+rule count_matrix:
+    input:
+        peaks=f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.txt",
+        bed_se=expand(f"{OUTDIR}/bed_se/{{sample}}.bed", sample = pep.sample_table['sample_name'])
+    output: matrix=f"{OUTDIR}/count_matrix/{{caller}}.csv"
+    log: "logs/union_peaks/{caller}.log"
+    resources: cpus = 16, time_min=900, mem_mb=40000, cpus_bmm=16, mem_mb_bmm=40000, partition = 'bmm'
+    conda: "../envs/pandas.yaml"
+    script: "../scripts/pyCountMatrix.py"
