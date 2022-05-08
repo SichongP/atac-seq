@@ -76,6 +76,22 @@ rule get_standard_peak_set_by_sample:
     output: f"{OUTDIR}/peaks/{{caller}}/standard/{{sample}}/{{sample}}.unique_501bp_peaks.txt"
     params: outdir = lambda w, output: os.path.split(output[0])[0]
     log: "logs/get_standard_peak_set_by_sample/{sample}_{caller}.log"
-    resources: cpus = 1, time_min=120, mem_mb=6000, cpus_bmm=1, mem_mb_bmm=6000, partition = 'med2'
+    resources: cpus = 1, time_min=120, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
     conda: "../envs/pandas.yaml"
     script: "../scripts/pyStandardizePeaks.py"
+    
+rule merge_replicates:
+    input: peak_files = lambda w: expand(f"{OUTDIR}/peaks/{{{{caller}}}}/standard/{{sample}}/{{sample}}.unique_501bp_peaks.txt", sample = pep.sample_table[(pep.sample_table['condition'] == w.condition) & (pep.sample_table['sex'] == w.sex)]['sample_name'])
+    output: f"{OUTDIR}/peaks/{{caller}}/merged_replicates/{{condition}}_{{sex}}.unique_501bp_peaks.txt"
+    log: "logs/merge_replicates/{condition}__{sex}_{caller}.log"
+    resources: cpus = 1, time_min=120, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
+    conda: "../envs/pandas.yaml"
+    script: "../scripts/pyMergeBioSamples.py"
+    
+rule merge_sex:
+    input: peak_files = lambda w: expand(f"{OUTDIR}/peaks/{{{{caller}}}}/merged_replicates/{{{{condition}}}}_{{sex}}.unique_501bp_peaks.txt", sex = pep.sample_table[pep.sample_table['condition'] == w.condition]['sex'].unique())
+    output: f"{OUTDIR}/peaks/{{caller}}/merged_sex/{{condition}}.unique_501bp_peaks.txt"
+    log: "logs/merge_sex/{condition}_{caller}.log"
+    resources: cpus = 1, time_min=120, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
+    conda: "../envs/pandas.yaml"
+    script: "../scripts/pyMergeBioSamples.py"
