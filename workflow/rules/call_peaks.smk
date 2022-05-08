@@ -95,3 +95,11 @@ rule merge_sex:
     resources: cpus = 1, time_min=120, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
     conda: "../envs/pandas.yaml"
     script: "../scripts/pyMergeBioSamples.py"
+
+rule union_peaks:
+    input: peak_files = lambda w: expand(f"{OUTDIR}/peaks/{{{{caller}}}}/merged_sex/{{condition}}.unique_501bp_peaks.txt", condition = pep.sample_table['condition'].unique())
+    output: f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.txt"
+    log: "logs/union_peaks/{caller}.log"
+    resources: cpus = 1, time_min=120, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
+    conda: "../envs/pandas.yaml"
+    script: "../scripts/pyMergeBioSamples.py"
