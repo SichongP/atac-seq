@@ -6,7 +6,8 @@ from multiprocessing import Pool
 ncores = snakemake.resources['cpus']
 bed_files = snakemake.input['bed_se']
 union_peak_file = snakemake.input['peaks']
-out_file = snakemake.output['matrix']
+out_file_raw = snakemake.output['matrix_raw']
+out_file_norm = snakemake.output['matrix_norm']
 
 union_peaks = pd.read_csv(union_peak_file)
 #union_peaks = union_peaks.sort_values(['chr', 'start', 'end'])
@@ -30,5 +31,6 @@ with Pool(ncores) as p:
         
 union_peaks['peak'] = union_peaks['chr'] + '_' + union_peaks['start'].astype(str) + '_' + union_peaks['end'].astype(str)
 matrix = union_peaks.iloc[:, 5:].set_index('peak')
-matrix = np.log((matrix / (matrix.sum(axis = 1) + 1)) + 1)
-matrix.to_csv(out_file)
+matrix.to_csv(out_file_raw)
+matrix_norm = np.log((matrix / (matrix.sum(axis = 1) + 1)[:,None]) + 1)
+matrix_norm.to_csv(out_file_norm)

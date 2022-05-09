@@ -108,7 +108,9 @@ rule count_matrix:
     input:
         peaks=f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.txt",
         bed_se=expand(f"{OUTDIR}/bed_se/{{sample}}.bed", sample = pep.sample_table['sample_name'])
-    output: matrix=f"{OUTDIR}/count_matrix/{{caller}}.csv"
+    output:
+        matrix_norm=f"{OUTDIR}/count_matrix/{{caller}}_norm.csv",
+        matrix_raw=f"{OUTDIR}/count_matrix/{{caller}}_raw.csv"
     log: "logs/union_peaks/{caller}.log"
     resources: cpus = 16, time_min=900, mem_mb=40000, cpus_bmm=16, mem_mb_bmm=40000, partition = 'bmm'
     conda: "../envs/pandas.yaml"
