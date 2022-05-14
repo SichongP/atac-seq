@@ -36,10 +36,10 @@ union_peaks = union_peaks.sort_values(['chr', 'start', 'end'])
 peak_intervals = pd.arrays.IntervalArray.from_arrays(left = union_peaks['start'], right = union_peaks['end'], closed = 'both')
 union_peaks.index = pd.MultiIndex.from_arrays([union_peaks['chr'], pd.IntervalIndex(peak_intervals)])
 
-for bed_file in bed_files[:3]:
+for bed_file in bed_files:
     count_transpositions(bed_file, union_peaks, ncores)
 
 union_peaks.to_csv(out_file_raw)
 matrix = union_peaks.iloc[:, 5:]
-matrix_norm = np.log((matrix / (matrix.sum(axis = 0) + 1)) + 1).corr()
+matrix_norm = np.log((matrix / (matrix.sum(axis = 0) + 1)) + 1)
 matrix_norm.to_csv(out_file_norm)
