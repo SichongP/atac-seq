@@ -9,7 +9,7 @@ rule make_bed_se:
     log: "logs/make_bed_se/{sample}.log"
     shell:
      """
-     bedtools bamtobed -i {input} 2>{log} 1>{output} 
+     bedtools bamtobed -i {input} 2>{log} 1>{output}
      """
      
 rule macs3:
@@ -112,6 +112,6 @@ rule count_matrix:
         matrix_norm=f"{OUTDIR}/count_matrix/{{caller}}_norm.csv",
         matrix_raw=f"{OUTDIR}/count_matrix/{{caller}}_raw.csv"
     log: "logs/union_peaks/{caller}.log"
-    resources: cpus = 16, time_min=900, mem_mb=40000, cpus_bmm=16, mem_mb_bmm=40000, partition = 'bmm'
+    resources: cpus = 16, time_min=2000, mem_mb=40000, cpus_bmm=16, mem_mb_bmm=40000, partition = 'high2'
     conda: "../envs/pandas.yaml"
     script: "../scripts/pyCountMatrix.py"

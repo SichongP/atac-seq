@@ -9,28 +9,37 @@ union_peak_file = snakemake.input['peaks']
 out_file_raw = snakemake.output['matrix_raw']
 out_file_norm = snakemake.output['matrix_norm']
 
-union_peaks = pd.read_csv(union_peak_file)
-#union_peaks = union_peaks.sort_values(['chr', 'start', 'end'])
 
-def find_peak(read, peaks):
-    peaks_interval = pd.arrays.IntervalArray.from_arrays(left = peaks['start'], right = peaks['end'], closed = 'both')
-    cutting_site = read['start'] if read['read'] == 1 else read['end']
-    return np.all([peaks_interval.contains(cutting_site), peaks['chr'] == read['chr']], axis = 0)
-
-def count_file(bed_file, peaks):
-    name = os.path.basename(bed_file).replace('.bed', '')
-    full_reads = pd.read_csv(bed_file, sep = '\t', names = ['chr', 'start', 'end', 'name', 'mapq', 'strand'], engine = 'c')
-    full_reads['read'] = np.where(full_reads['name'].str.endswith('1'), 1, 2)
-    mat = full_reads.apply(find_peak, peaks = union_peaks, axis = 1)
-    return (name, np.array([i for i in mat]).sum(axis = 0))
+def count_transpositions_by_chr(reads, peaks, chrom, name):
+    sub_reads = reads.loc[reads['chr'] == chrom, :]
+    sub_peaks = union_peaks.loc[union_peaks['chr'] == chrom].copy()
+    pos = np.concatenate([sub_reads[sub_reads['name'].str.endswith('1')]['start'].values, sub_reads[sub_reads['name'].str.endswith('2')]['end'].values])
+    sub_peaks = sub_peaks.sort_values('start', ascending = True)
+    bins = pd.Series(pd.cut(pos, sub_peaks.index.get_level_values(1))).value_counts()
+    bins.index = pd.MultiIndex.from_arrays([[chrom]*bins.shape[0], bins.index])
+    return bins
     
-with Pool(ncores) as p:
-    results = p.starmap(count_file, [(bed_file, union_peaks) for bed_file in bed_files])
-    for name, result in results:
-        union_peaks.loc[:, name] = result
-        
-union_peaks['peak'] = union_peaks['chr'] + '_' + union_peaks['start'].astype(str) + '_' + union_peaks['end'].astype(str)
-matrix = union_peaks.iloc[:, 5:].set_index('peak')
-matrix.to_csv(out_file_raw)
-matrix_norm = np.log((matrix / (matrix.sum(axis = 1) + 1)[:,None]) + 1)
+def count_transpositions(bed_file, peaks, ncores):
+    chrs = union_peaks['chr'].unique()
+    name = os.path.basename(bed_file).replace('.bed', '')
+    print(name)
+    reads = pd.read_csv(bed_file, sep = '\t', names = ['chr', 'start', 'end', 'name', 'score', 'strand'], dtype = {'chr': 'category', 'start': np.int32, 'end': np.int32, 'score': np.int32, 'strand': 'category'})
+    with Pool(ncores) as p:
+        results = p.starmap(count_transpositions_by_chr, [(reads, peaks, chrom, name) for chrom in chrs])
+    counts = pd.Series(dtype = np.int32)
+    for i in results:
+        counts = pd.concat([counts, pd.Series(i)])
+    peaks.loc[:, name] = counts
+
+union_peaks = pd.read_csv(union_peak_file)
+union_peaks = union_peaks.sort_values(['chr', 'start', 'end'])
+peak_intervals = pd.arrays.IntervalArray.from_arrays(left = union_peaks['start'], right = union_peaks['end'], closed = 'both')
+union_peaks.index = pd.MultiIndex.from_arrays([union_peaks['chr'], pd.IntervalIndex(peak_intervals)])
+
+for bed_file in bed_files[:3]:
+    count_transpositions(bed_file, union_peaks, ncores)
+
+union_peaks.to_csv(out_file_raw)
+matrix = union_peaks.iloc[:, 5:]
+matrix_norm = np.log((matrix / (matrix.sum(axis = 0) + 1)) + 1).corr()
 matrix_norm.to_csv(out_file_norm)
