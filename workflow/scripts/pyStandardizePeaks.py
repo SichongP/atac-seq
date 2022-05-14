@@ -10,7 +10,7 @@ caller = snakemake.wildcards['caller']
 def parse_single_sample(file, chrom_sizes_df, out_dir = '.'):
     bio_sample, condition = os.path.basename(file).split('.')[0].split('_')[:2]
     if caller == 'macs3':
-        peaks = pd.read_csv(file, sep = '\t', index_col = -1, comment = '#')
+        peaks = pd.read_csv(file, sep = '\t', index_col = False, comment = '#', names = ['chr', 'start', 'abs_summit', 'name', '-log10(pvalue)'])
         standard_peak = peaks[['chr', '-log10(pvalue)', 'abs_summit']]
     else:
         peaks = pd.read_csv(file, sep = '\t', index_col = False, comment = '#', names = ['chr', 'start', 'end', 'name', 'score', 'strand', 'auc', '-log10(pvalue)', '-log10(qvalue)', 'summit_pos'])

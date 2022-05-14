@@ -26,6 +26,21 @@ rule macs3:
      macs3 callpeak -p 0.01 -t {input} -f BED -g {config[effective_size]} --outdir {params.outdir} -n {wildcards.sample} -B --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all
      """
 
+rule refinepeak:
+# Refine peak summits using alignment
+    input:
+        summits = f"{OUTDIR}/peaks/macs3/{{sample}}/{{sample}}_peaks.narrowPeak",
+        alignment = f"{OUTDIR}/bed_se/{{sample}}.bed"
+    output: f"{OUTDIR}/peaks/macs3/{{sample}}/{{sample}}.summits.refined.bed"
+    conda: "../envs/macs3.yaml"
+    params: outdir = lambda w, output: os.path.split(output[0])[0]
+    log: "logs/macs3/{sample}.log"
+    resources: cpus = 1, time_min=60, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
+    shell:
+     """
+     macs3 refinepeak -b {input.summits} -i {input.alignment} -f BED -o {output}
+     """
+
 rule sort_by_name:
     input: f"{OUTDIR}/shifted_bam/{{sample}}.bam"
     output: f"{OUTDIR}/shifted_bam/name_sorted/{{sample}}.bam"
@@ -71,7 +86,7 @@ rule genrich_by_replicate:
 rule get_standard_peak_set_by_sample:
 # Make 501bp fixed length peak sets and normalize peak scores
     input:
-        peaks=lambda w: f"{OUTDIR}/peaks/macs3/{{sample}}/{{sample}}_peaks.xls" if w.caller == 'macs3' else f"{OUTDIR}/peaks/genrich/{{sample}}/{{sample}}_peaks.narrowPeak",
+        peaks=lambda w: f"{OUTDIR}/peaks/macs3/{{sample}}/{{sample}}.summits.refined.bed" if w.caller == 'macs3' else f"{OUTDIR}/peaks/genrich/{{sample}}/{{sample}}_peaks.narrowPeak",
         chrom_sizes=config['chrom_sizes']
     output: f"{OUTDIR}/peaks/{{caller}}/standard/{{sample}}/{{sample}}.unique_501bp_peaks.txt"
     params: outdir = lambda w, output: os.path.split(output[0])[0]
