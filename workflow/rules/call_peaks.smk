@@ -1,3 +1,5 @@
+localrules: txt2bed
+
 rule make_bed_se:
 # We generate single-ended bed files from paired-end bam files
 # Because both ends of a fragment represent a Tn5 insertion site each
@@ -20,7 +22,7 @@ rule macs3:
     conda: "../envs/macs3.yaml"
     params: outdir = lambda w, output: os.path.split(output[0])[0]
     log: "logs/macs3/{sample}.log"
-    resources: cpus = 1, time_min=60, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
+    resources: cpus = 1, time_min=60, mem_mb=3000, cpus_bmm=1, mem_mb_bmm=3000, partition = 'med2'
     shell:
      """
      macs3 callpeak -p 0.01 -t {input} -f BED -g {config[effective_size]} --outdir {params.outdir} -n {wildcards.sample} -B --shift -75 --extsize 150 --nomodel --call-summits --nolambda --keep-dup all
@@ -35,7 +37,7 @@ rule refinepeak:
     conda: "../envs/macs3.yaml"
     params: outdir = lambda w, output: os.path.split(output[0])[0]
     log: "logs/macs3/{sample}.log"
-    resources: cpus = 1, time_min=60, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
+    resources: cpus = 1, time_min=300, mem_mb=4000, cpus_bmm=1, mem_mb_bmm=4000, partition = 'med2'
     shell:
      """
      macs3 refinepeak -b {input.summits} -i {input.alignment} -f BED -o {output}
@@ -130,3 +132,26 @@ rule count_matrix:
     resources: cpus = 16, time_min=2000, mem_mb=40000, cpus_bmm=16, mem_mb_bmm=40000, partition = 'high2'
     conda: "../envs/pandas.yaml"
     script: "../scripts/pyCountMatrix.py"
+
+rule txt2bed:
+    input: f"{OUTDIR}/peaks/{{caller}}/{{step}}/{{name}}.unique_501bp_peaks.txt"
+    output: f"{OUTDIR}/peaks/{{caller}}/{{step}}/{{name}}.unique_501bp_peaks.bed"
+    resources: cpus = 1, time_min=30, mem_mb=2000, cpus_bmm=1, mem_mb_bmm=2000, partition = 'low2'
+    shell:
+     """
+     tail -n+2 {input} | awk -F',' '{{print($1"\t"$3"\t"$4"\t.\t"$5)}}' | sed 's/MSY/chrY/g' > {output}.tmp
+     sort -k1,1 -k2,2n {output}.tmp > {output}
+     rm {output}.tmp
+     """
+
+rule condition_specific_peaks:
+    input:
+        condition_bed = f"{OUTDIR}/peaks/{{caller}}/merged_sex/{{condition}}.unique_501bp_peaks.bed",
+        union_bed = f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.bed"
+    output: f"{OUTDIR}/peaks/{{caller}}/condition_specific/{{condition}}.unique_501bp_peaks.bed"
+    resources: cpus = 1, time_min=30, mem_mb=2000, cpus_bmm=1, mem_mb_bmm=2000, partition = 'low2'
+    conda: "../envs/bedtools.yaml"
+    shell:
+     """
+     bedtools intersect -u -sorted -a {input.condition_bed} -b {input.union_bed} > {output}
+     """
