@@ -165,6 +165,6 @@ rule gather_final_set:
      """
      for file in {input}
      do
-         ln -s $file {params.outdir}/$(basename $file)
+         ln -fs $(readlink -f $file) {params.outdir}/$(basename $file)
      done
      """
