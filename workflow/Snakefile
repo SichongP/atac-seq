@@ -13,6 +13,7 @@ include: "rules/read_qc.smk"
 include: "rules/library_qc.smk"
 include: "rules/alignment.smk"
 include: "rules/call_peaks.smk"
+include: "rules/annotate_peaks.smk"
 
 
 rule all:
@@ -25,4 +26,5 @@ rule all:
         expand(f"{OUTDIR}/metrics/frag_size/{{sample}}.tsv", sample = pep.sample_table['sample_name']),
         expand(f"{OUTDIR}/count_matrix/{{caller}}_norm.csv", caller = ['macs3', 'genrich']),
         expand(f"{OUTDIR}/peaks/genrich/combined_call/{{tissue_sex}}/{{tissue_sex}}_peaks.narrowPeak", tissue_sex = [ '_'.join(i) for i in pep.sample_table[['condition', 'sex']].values.tolist()]),
-        expand(f"{OUTDIR}/peaks/{{caller}}/condition_specific/{{condition}}.unique_501bp_peaks.bed", caller =['macs3', 'genrich'], condition = pep.sample_table['condition'].unique())
+        expand(f"{OUTDIR}/peaks/{{caller}}/condition_specific/{{condition}}.unique_501bp_peaks.bed", caller =['macs3', 'genrich'], condition = pep.sample_table['condition'].unique()),
+        expand(f"{OUTDIR}/annotation/{{caller}}/{{name}}.bed", name = list(pep.sample_table['condition'].unique()) + ['union'], caller =['macs3', 'genrich'])
