@@ -2,7 +2,7 @@
 # Please follow the best practices: 
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there. 
-
+ruleorder: common_peaks > txt2bed
 import os
 
 pepfile: "config/pep/config.yaml"
@@ -27,4 +27,7 @@ rule all:
         expand(f"{OUTDIR}/count_matrix/{{caller}}_norm.csv", caller = ['macs3', 'genrich']),
         expand(f"{OUTDIR}/peaks/genrich/combined_call/{{tissue_sex}}/{{tissue_sex}}_peaks.narrowPeak", tissue_sex = [ '_'.join(i) for i in pep.sample_table[['condition', 'sex']].values.tolist()]),
         expand(f"{OUTDIR}/peaks/{{caller}}/condition_specific/{{condition}}.unique_501bp_peaks.bed", caller =['macs3', 'genrich'], condition = pep.sample_table['condition'].unique()),
-        expand(f"{OUTDIR}/annotation/{{caller}}/{{name}}.bed", name = list(pep.sample_table['condition'].unique()) + ['union'], caller =['macs3', 'genrich'])
+        expand(f"{OUTDIR}/annotation/{{caller}}/{{name}}.bed", name = list(pep.sample_table['condition'].unique()) + ['union', 'common'], caller =['macs3', 'genrich']),
+        expand(f"{OUTDIR}/annotation/{{caller}}/{{name}}.specific.bed", name = list(pep.sample_table['condition'].unique()), caller =['macs3', 'genrich']),
+        expand(f"{OUTDIR}/peaks/{{caller}}/condition_only/{{condition}}.unique_501bp_peaks.bed", caller =['macs3', 'genrich'], condition = pep.sample_table['condition'].unique())
+        

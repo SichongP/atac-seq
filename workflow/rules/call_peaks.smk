@@ -1,4 +1,5 @@
 localrules: txt2bed
+ruleorder: common_peaks > txt2bed
 
 rule make_bed_se:
 # We generate single-ended bed files from paired-end bam files
@@ -144,7 +145,7 @@ rule txt2bed:
      rm {output}.tmp
      """
 
-rule condition_specific_peaks:
+rule condition_peaks:
     input:
         condition_bed = f"{OUTDIR}/peaks/{{caller}}/merged_sex/{{condition}}.unique_501bp_peaks.bed",
         union_bed = f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.bed"
@@ -156,6 +157,35 @@ rule condition_specific_peaks:
      bedtools intersect -u -sorted -a {input.condition_bed} -b {input.union_bed} > {output}
      """
      
+rule condition_only_peaks:
+    input:
+        condition_bed = f"{OUTDIR}/peaks/{{caller}}/condition_specific/{{condition}}.unique_501bp_peaks.bed",
+        other_beds = lambda w: expand(f"{OUTDIR}/peaks/{{{{caller}}}}/condition_specific/{{condition}}.unique_501bp_peaks.bed", condition = [condition for condition in pep.sample_table['condition'].unique() if not condition == w.condition])
+    output: f"{OUTDIR}/peaks/final/{{caller}}/{{condition}}.specific.unique_501bp_peaks.bed"
+    resources: cpus = 1, time_min=30, mem_mb=2000, cpus_bmm=1, mem_mb_bmm=2000, partition = 'low2'
+    conda: "../envs/bedtools.yaml"
+    shell:
+     """
+     bedtools intersect -wa -wb -v -sorted -a {input.condition_bed} -b {input.other_beds} > {output}
+     """
+     
+rule common_peaks:
+    input:
+        condition_peaks = expand(f"{OUTDIR}/peaks/{{{{caller}}}}/condition_specific/{{condition}}.unique_501bp_peaks.bed", condition = [condition for condition in pep.sample_table['condition'].unique()]),
+        union_peaks = f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.bed"
+    output: f"{OUTDIR}/peaks/final/{{caller}}/common.unique_501bp_peaks.bed"
+    resources: cpus = 1, time_min=30, mem_mb=2000, cpus_bmm=1, mem_mb_bmm=2000, partition = 'low2'
+    conda: "../envs/bedtools.yaml"
+    shell:
+     """
+     cp {input.union_peaks} {output}
+     for i in {input.condition_peaks}
+     do
+         bedtools intersect -a {output} -b $i -u -sorted > {output}.tmp
+         mv {output}.tmp {output}
+     done
+     """
+
 rule gather_final_set:
     input: f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.bed", expand(f"{OUTDIR}/peaks/{{{{caller}}}}/condition_specific/{{condition}}.unique_501bp_peaks.bed", condition = pep.sample_table['condition'].unique())
     output: expand(f"{OUTDIR}/peaks/final/{{{{caller}}}}/{{name}}.unique_501bp_peaks.bed", name = list(pep.sample_table['condition'].unique()) + ['union'])
