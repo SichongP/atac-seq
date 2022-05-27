@@ -187,7 +187,7 @@ rule common_peaks:
      """
 
 rule gather_final_set:
-    input: f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.bed", expand(f"{OUTDIR}/peaks/{{{{caller}}}}/condition_specific/{{condition}}.unique_501bp_peaks.bed", condition = pep.sample_table['condition'].unique())
+    input: f"{OUTDIR}/peaks/{{caller}}/union/union.unique_501bp_peaks.bed", expand(f"{OUTDIR}/peaks/{{{{caller}}}}/merged_sex/{{condition}}.unique_501bp_peaks.bed", condition = pep.sample_table['condition'].unique())
     output: expand(f"{OUTDIR}/peaks/final/{{{{caller}}}}/{{name}}.unique_501bp_peaks.bed", name = list(pep.sample_table['condition'].unique()) + ['union'])
     params: outdir = lambda w, output: os.path.split(output[0])[0]
     resources: cpus=1, time_min=30, mem_mb=500, partition="low2"
