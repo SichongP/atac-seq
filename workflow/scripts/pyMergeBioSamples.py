@@ -5,10 +5,7 @@ import glob, os
 peak_files = snakemake.input['peak_files']
 outfile = snakemake.output[0]
 
-def merge_bio_samples(files, outfile = '.'):
-    peaks = pd.DataFrame()
-    for file in files:
-        peaks = pd.concat([peaks, pd.read_csv(file, index_col = False)])
+def merge_peaks_by_chr(peaks):
     peaks = peaks.sort_values('normalized_score', ascending = False)
     i = 0
     while i < peaks.shape[0]:
@@ -19,6 +16,13 @@ def merge_bio_samples(files, outfile = '.'):
     if 'chrom_size' in peaks.columns:
         peaks = peaks.drop(['chrom_size', '-log10(pvalue)'], axis = 1)
     peaks.loc[:,'normalized_score'] = norm_score
+    return peaks
+
+def merge_bio_samples(files, outfile = '.'):
+    peaks = pd.DataFrame()
+    for file in files:
+        peaks = pd.concat([peaks, pd.read_csv(file, index_col = False)])
+    peaks = peaks.groupby('chr').apply(merge_peaks_by_chr)
     peaks.to_csv(outfile, index = False)
 
 merge_bio_samples(peak_files, outfile)
