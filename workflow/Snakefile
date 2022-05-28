@@ -30,6 +30,5 @@ rule all:
         expand(f"{OUTDIR}/peaks/{{caller}}/condition_specific/{{condition}}.unique_501bp_peaks.bed", caller =['macs3', 'genrich'], condition = pep.sample_table['condition'].unique()),
         expand(f"{OUTDIR}/annotation/{{caller}}/{{name}}.bed", name = list(pep.sample_table['condition'].unique()) + ['union', 'common'], caller =['macs3', 'genrich']),
         expand(f"{OUTDIR}/annotation/{{caller}}/{{name}}.specific.bed", name = list(pep.sample_table['condition'].unique()), caller =['macs3', 'genrich']),
-        expand(f"{OUTDIR}/peaks/{{caller}}/condition_only/{{condition}}.unique_501bp_peaks.bed", caller =['macs3', 'genrich'], condition = pep.sample_table['condition'].unique()),
         expand(f"{OUTDIR}/peak_filter/{{caller}}/{{sample}}.csv", caller = ['macs3', 'genrich'], sample = [condition for condition in pep.sample_table['condition'].unique() if not condition == 'Testis'])
         
